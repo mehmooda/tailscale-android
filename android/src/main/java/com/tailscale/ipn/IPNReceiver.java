@@ -7,7 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import androidx.work.Data;
-
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
@@ -29,9 +29,9 @@ public class IPNReceiver extends BroadcastReceiver {
 
         // On the relevant action, start the relevant worker, which can stay active for longer than this receiver can.
         if (Objects.equals(intent.getAction(), INTENT_CONNECT_VPN)) {
-            workManager.enqueue(new OneTimeWorkRequest.Builder(StartVPNWorker.class).build());
+            workManager.enqueueUniqueWork("ToggleVPN", ExistingWorkPolicy.REPLACE, new OneTimeWorkRequest.Builder(StartVPNWorker.class).build());
         } else if (Objects.equals(intent.getAction(), INTENT_DISCONNECT_VPN)) {
-            workManager.enqueue(new OneTimeWorkRequest.Builder(StopVPNWorker.class).build());
+            workManager.enqueueUniqueWork("ToggleVPN", ExistingWorkPolicy.REPLACE, new OneTimeWorkRequest.Builder(StopVPNWorker.class).build());
         }
         else if (Objects.equals(intent.getAction(), INTENT_USE_EXIT_NODE)) {
             String exitNode = intent.getStringExtra("exitNode");
@@ -39,7 +39,7 @@ public class IPNReceiver extends BroadcastReceiver {
             Data.Builder workData = new Data.Builder();
             workData.putString(UseExitNodeWorker.EXIT_NODE_NAME, exitNode);
             workData.putBoolean(UseExitNodeWorker.ALLOW_LAN_ACCESS, allowLanAccess);
-            workManager.enqueue(new OneTimeWorkRequest.Builder(UseExitNodeWorker.class).setInputData(workData.build()).build());
+            workManager.enqueueUniqueWork("UseExitNode", ExistingWorkPolicy.REPLACE, new OneTimeWorkRequest.Builder(UseExitNodeWorker.class).setInputData(workData.build()).build());
         }
     }
 }
